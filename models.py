@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
-class Interest(BaseModel):
+class Event(BaseModel):
     name: str
-    source: str
-    source_type: str
+    description: str
+    date: str
+    time: str
+    duration: str
+    completed: bool
+    points: int

@@ -17,7 +17,7 @@ OAUTH2_CLIENT_ID = os.environ.get("OAUTH2_CLIENT_ID")
 OAUTH2_CLIENT_SECRET = os.environ.get("OAUTH2_CLIENT_SECRET")
 OAUTH2_REDIRECT_URI = os.environ.get("OAUTH2_REDIRECT_URI")
 
-@auth_api.get("/login")
+@auth_api.get("/login/discord")
 def login() -> RedirectResponse:
     return RedirectResponse(f"https://discord.com/api/v8/oauth2/authorize?client_id={OAUTH2_CLIENT_ID}&scope=identify%20email&response_type=code&redirect_uri={OAUTH2_REDIRECT_URI}")
 
