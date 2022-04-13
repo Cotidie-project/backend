@@ -22,7 +22,7 @@ def login() -> RedirectResponse:
     return RedirectResponse(f"https://discord.com/api/v8/oauth2/authorize?client_id={OAUTH2_CLIENT_ID}&scope=identify%20email&response_type=code&redirect_uri={OAUTH2_REDIRECT_URI}")
 
 @auth_api.get("/redirect")
-def redirect(code: Union[str, None] = None) -> Dict[str, Union[str, bool]]:
+def redirect(code: Union[str, None] = None):
     if code is None:
         return {"error":True, "msg":"code not returned"}
 
@@ -33,7 +33,7 @@ def redirect(code: Union[str, None] = None) -> Dict[str, Union[str, bool]]:
             return {"success":True, "token":token, "new":False, "user":user}
         
         users_db.insert({"username":user["username"], "discriminator":user["discriminator"], "avatar":user["avatar"], "interests":[]}, user["id"])
-        return {"success":True, "token":token, "new":True, "user":user}
+        return RedirectResponse(os.getenv("FRONTEND_URL", "http://localhost:5000/"), headers={"Token":token})
     except Exception as e:
         return {"error":True, "msg":str(e)}
 
