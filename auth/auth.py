@@ -37,15 +37,13 @@ def redirect(code: Union[str, None] = None):
                             headers={"Authorization": "Bearer "+token}).json()["user"]
         if users_db.get(user["id"]) is not None:
             rr = RedirectResponse(FRONTEND_URL)
-            rr.set_cookie(
-                "x-auth", json.dumps({"success": True, "token": token, "new": False, "user": user}))
+            rr.set_cookie("token", token)
             return rr
 
         users_db.insert({"username": user["username"], "discriminator": user["discriminator"],
                         "avatar": user["avatar"], "interests": []}, user["id"])
         rr = RedirectResponse(FRONTEND_URL)
-        rr.set_cookie(
-            "x-auth", json.dumps({"success": True, "token": token, "new": True, "user": user}))
+        rr.set_cookie("token", token)
         return rr
     except Exception as e:
         return {"error": True, "msg": str(e)}
