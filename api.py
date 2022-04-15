@@ -4,16 +4,18 @@ import uuid
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import deta
+import requests
 
 from auth.auth import auth_api
-from models import Event
+from models import Task, UpdateTask, Break
 
 load_dotenv()
 
 api = FastAPI()
 deta = deta.Deta(os.environ.get("DETA_KEY"))
 users_db = deta.Base("cotidie-users")
-events_db = deta.Base("cotidie-events")
+tasks_db = deta.Base("cotidie-tasks")
+breaks_db = deta.Base("cotidie-breaks")
 
 api.mount("/auth", auth_api)
 
@@ -21,18 +23,66 @@ api.mount("/auth", auth_api)
 async def index():
     return {"ok":True}
 
-@api.post("/new/event")
-async def new_event(event: Event):
-    pass
+@api.post("/new/task")
+async def new_task(task: Task, token: str):
+    if token is None or token == "":
+        return {"error":"no token present"}
+    user_id = requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]
+    tid = str(uuid.uuid4())
+    tasks_db.insert({"name":task.name, "desc":task.description, "date":task.date, "time":task.time, "duration":task.duration, "completed":task.completed, "points":task.points, "id":user_id}, tid)
+    return {"success":True}
 
-@api.get("/event/{event_id}")
-async def get_event():
-    pass
+@api.get("/task/{task_id}")
+async def get_task(task_id: str):
+    task = tasks_db.get(task_id)
+    if task is None:
+        return {"error":"task does not exist"}
+    return task
 
-@api.put("/update/event/{event_id}")
-async def update_event(event: Event):
-    pass
+@api.put("/update/task/{task_id}")
+async def update_task(task: UpdateTask, task_id: str, token: str):
+    user_id = requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]
+    if (task_:=tasks_db.get(task_id)) is not None:
+        tasks_db.put({"name":task.name, "description":task.description, "points":task.points, "completed":task.completed, "date":task_["date"], "time":task_["time"], "duration":task_["duration"], "id":user_id}, task_id)
+        return {"success":True}
+    return {"error":"task does not exist"}
 
-@api.delete("/delete/event/{event_id}")
-async def delete_event(event: Event):
-    pass
+@api.delete("/delete/task/{task_id}")
+async def delete_task(task_id: str):
+    task = tasks_db.get(task_id)
+    if task is None:
+        return {"error":"task does not exist"}
+    tasks_db.delete(task_id)
+    return {"success":True}
+
+@api.post("/new/break")
+async def new_break(break_: Break, token: str):
+    if token is None or token == "":
+        return {"error":"no token present"}
+    user_id = requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]
+    bid = str(uuid.uuid4())
+    breaks_db.insert({"name":break_.name, "stime":break_.stime, "btime":break_.etime, "id":user_id}, bid)
+    return {"success":True}    
+
+@api.get("/break/{break_id}")
+async def get_break(break_id: str):
+    break_ = breaks_db.get(break_id)
+    if break_ is None:
+        return {"error":"break does not exist"}
+    return break_
+
+@api.put("/update/break/{break_id}")
+async def update_break(break_: Break, break_id: str, token: str):
+    user_id = requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]
+    if breaks_db.get(break_id) is not None:
+        breaks_db.put({"name":break_.name, "stime":break_.stime, "etime":break_.etime, "id":user_id}, break_id)
+        return {"success":True}
+    return {"error":"task does not exist"}
+
+@api.delete("/delete/break/{break_id}")
+async def delete_break(break_id: str):
+    break_ = breaks_db.get(break_id)
+    if break_ is None:
+        return {"error":"task does not exist"}
+    breaks_db.delete(break_id)
+    return {"success":True}

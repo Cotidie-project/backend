@@ -1,10 +1,21 @@
 from pydantic import BaseModel
 
-class Event(BaseModel):
+class Task(BaseModel):
     name: str
     description: str
     date: str
-    time: str
-    duration: str
+    time: int
+    duration: int
     completed: bool
     points: int
+
+class UpdateTask(BaseModel):
+    name: str
+    description: str
+    points: int
+    completed: bool
+
+class Break(BaseModel):
+    name: str
+    stime: int
+    etime: int
