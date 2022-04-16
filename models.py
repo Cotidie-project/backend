@@ -19,3 +19,7 @@ class Break(BaseModel):
     name: str
     stime: int
     etime: int
+
+class Plan(BaseModel):
+    tasks: list
+    breaks: list
