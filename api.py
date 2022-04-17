@@ -18,8 +18,8 @@ users_db = deta.Base("cotidie-users")
 tasks_db = deta.Base("cotidie-tasks")
 breaks_db = deta.Base("cotidie-breaks")
 
-api.mount("/auth", auth_api)
-api.mount("/plan", plan_api)
+api.mount("/api/auth", auth_api)
+api.mount("/api/plan", plan_api)
 
 @api.get("/")
 async def index():
