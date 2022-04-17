@@ -19,12 +19,12 @@ OAUTH2_REDIRECT_URI = os.environ.get("OAUTH2_REDIRECT_URI")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5000/")
 
 
-@auth_api.get("/login/discord")
+@auth_api.get("/api/login/discord")
 def login() -> RedirectResponse:
     return RedirectResponse(f"https://discord.com/api/v8/oauth2/authorize?client_id={OAUTH2_CLIENT_ID}&scope=identify%20email&response_type=code&redirect_uri={OAUTH2_REDIRECT_URI}")
 
 
-@auth_api.get("/redirect")
+@auth_api.get("/api/redirect")
 def redirect(code: Union[str, None] = None):
     if code is None:
         return {"error": True, "msg": "code not returned"}
@@ -48,7 +48,7 @@ def redirect(code: Union[str, None] = None):
         return {"error": True, "msg": str(e)}
 
 
-@auth_api.get("/user")
+@auth_api.get("/api/user")
 def get_user(request: Request):
     if request.headers.get("Discord-Token") is None:
         return {"error": True, "msg": "not authenticated"}
@@ -57,7 +57,7 @@ def get_user(request: Request):
         return requests.get("https://discord.com/api/v8/oauth2/@me", headers={"Authorization": "Bearer "+request.headers.get("Discord-Token", "")}).json()["user"]
 
 
-@auth_api.get("/user/{user_id}")
+@auth_api.get("/api/user/{user_id}")
 def get_user_by_id(user_id: str):
     if users_db.get(str(user_id)) is not None:
         return users_db.get(str(user_id))

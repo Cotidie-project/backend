@@ -41,7 +41,7 @@ async def get_task(task_id: str):
         return {"error":"task does not exist"}
     return task
 
-@api.get("/tasks/@me")
+@api.get("/api/tasks/@me")
 async def get_tasks(token: str):
     return tasks_db.fetch({"id":requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]}).items
 
