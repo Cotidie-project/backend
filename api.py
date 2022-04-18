@@ -18,14 +18,14 @@ users_db = deta.Base("cotidie-users")
 tasks_db = deta.Base("cotidie-tasks")
 breaks_db = deta.Base("cotidie-breaks")
 
-api.mount("/auth", auth_api)
-api.mount("/plan", plan_api)
+api.mount("/api/auth", auth_api)
+api.mount("/api/plan", plan_api)
 
-@api.get("/")
+@api.get("/api")
 async def index():
     return {"ok":True}
 
-@api.post("/new/task")
+@api.post("/api/new/task")
 async def new_task(task: Task, token: str):
     if token is None or token == "":
         return {"error":"no token present"}
@@ -34,18 +34,18 @@ async def new_task(task: Task, token: str):
     tasks_db.insert({"name":task.name, "description":task.description, "date":task.date, "time":task.time, "duration":task.duration, "completed":task.completed, "points":task.points, "id":user_id}, tid)
     return {"success":True}
 
-@api.get("/task/{task_id}")
+@api.get("/api/task/{task_id}")
 async def get_task(task_id: str):
     task = tasks_db.get(task_id)
     if task is None:
         return {"error":"task does not exist"}
     return task
 
-@api.get("/tasks/@me")
+@api.get("/api/tasks/@me")
 async def get_tasks(token: str):
     return tasks_db.fetch({"id":requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]}).items
 
-@api.put("/update/task/{task_id}")
+@api.put("/api/update/task/{task_id}")
 async def update_task(task: UpdateTask, task_id: str, token: str):
     user_id = requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]
     if (task_:=tasks_db.get(task_id)) is not None:
@@ -53,7 +53,7 @@ async def update_task(task: UpdateTask, task_id: str, token: str):
         return {"success":True}
     return {"error":"task does not exist"}
 
-@api.delete("/delete/task/{task_id}")
+@api.delete("/api/delete/task/{task_id}")
 async def delete_task(task_id: str):
     task = tasks_db.get(task_id)
     if task is None:
@@ -61,7 +61,7 @@ async def delete_task(task_id: str):
     tasks_db.delete(task_id)
     return {"success":True}
 
-@api.post("/new/break")
+@api.post("/api/new/break")
 async def new_break(break_: Break, token: str):
     if token is None or token == "":
         return {"error":"no token present"}
@@ -70,18 +70,18 @@ async def new_break(break_: Break, token: str):
     breaks_db.insert({"name":break_.name, "stime":break_.stime, "btime":break_.etime, "id":user_id}, bid)
     return {"success":True}    
 
-@api.get("/break/{break_id}")
+@api.get("/api/break/{break_id}")
 async def get_break(break_id: str):
     break_ = breaks_db.get(break_id)
     if break_ is None:
         return {"error":"break does not exist"}
     return break_
 
-@api.get("/breaks/@me")
+@api.get("/api/breaks/@me")
 def get_breaks(token: str):
     return breaks_db.fetch({"id":requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]}).items
 
-@api.put("/update/break/{break_id}")
+@api.put("/api/update/break/{break_id}")
 async def update_break(break_: Break, break_id: str, token: str):
     user_id = requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"]
     if breaks_db.get(break_id) is not None:
@@ -89,7 +89,7 @@ async def update_break(break_: Break, break_id: str, token: str):
         return {"success":True}
     return {"error":"task does not exist"}
 
-@api.delete("/delete/break/{break_id}")
+@api.delete("/api/delete/break/{break_id}")
 async def delete_break(break_id: str):
     break_ = breaks_db.get(break_id)
     if break_ is None:
