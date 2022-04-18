@@ -96,3 +96,13 @@ async def delete_break(break_id: str):
         return {"error":"task does not exist"}
     breaks_db.delete(break_id)
     return {"success":True}
+
+@api.get("/leaderboard")
+def get_leaderboard():
+    res = users_db.fetch()
+    all_items = res.items
+    while res.last:
+        res = users_db.fetch(last=res.last)
+        all_items += res.items
+
+    return sorted(all_items, key=lambda x: x["points"], reverse=True)

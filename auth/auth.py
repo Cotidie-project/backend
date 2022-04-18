@@ -40,7 +40,7 @@ def redirect(code: Union[str, None] = None):
             return rr
 
         users_db.insert({"username": user["username"], "discriminator": user["discriminator"],
-                        "avatar": user["avatar"], "interests": []}, user["id"])
+                        "avatar": user["avatar"], "points": 0}, user["id"])
         rr = RedirectResponse(FRONTEND_URL)
         rr.set_cookie("token", token)
         return rr
@@ -54,7 +54,7 @@ def get_user(request: Request):
         return {"error": True, "msg": "not authenticated"}
 
     else:
-        return requests.get("https://discord.com/api/v8/oauth2/@me", headers={"Authorization": "Bearer "+request.headers.get("Discord-Token", "")}).json()["user"]
+        return requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization": "Bearer "+request.headers.get("Discord-Token", "")}).json()["user"]
 
 
 @auth_api.get("/user/{user_id}")
@@ -63,3 +63,21 @@ def get_user_by_id(user_id: str):
         return users_db.get(str(user_id))
 
     return {"detail": "not found"}
+
+@auth_api.put("/user/update/{user_id}/{points}")
+def update_user_points(user_id: str, points: int, token: str):
+    user = users_db.get(user_id)
+    if user is None:
+        return {"error":True, "msg":"user does not exist"}
+
+    if not isinstance(points, int):
+        return {"error":True, "msg":"points must be a number"}
+
+    try:
+        if requests.get("https://discord.com/api/oauth2/@me", headers={"Authorization":"Bearer "+token}).json()["user"]["id"] == user_id:
+            users_db.put({"username":user["username"], "discriminator":user["discriminator"], "avatar":user["avatar"], "points":points}, user_id)
+            return {"success":True}
+
+        return {"error":True, "msg":"token and id do not match"}
+    except Exception:
+        return {"error":True, "msg":"invalid token"}

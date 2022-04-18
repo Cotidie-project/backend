@@ -55,9 +55,6 @@ def plan_(plan: Plan, plan_type: str, token: str):
         time = day_start
         if find_available_time(schedule, time, time_per_task) > day_end-time_per_task:
             return {"error":"schedule is filled"}
-        #print(schedule)
         schedule[int_to_time_str(find_available_time(schedule, time, time_per_task))] = {"type":"task", "name":task["name"], "desc":task["description"]}
 
-    #print(schedule)
-    #return {"ok":True}
     return schedule
